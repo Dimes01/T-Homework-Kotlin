@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "2.0.0"
+    kotlin("plugin.serialization") version "2.0.0"
 }
 
 group = "org.example"
@@ -26,8 +27,7 @@ dependencies {
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitApiVersion")
-    testImplementation("org.mockito:mockito-core:$mockitoVersion")
-}
+    testImplementation("io.ktor:ktor-client-mock:$ktorVersion")}
 
 tasks.test {
     useJUnitPlatform()

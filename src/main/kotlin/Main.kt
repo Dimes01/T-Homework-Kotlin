@@ -7,7 +7,20 @@ import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.*
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneOffset
+import java.util.LinkedList
+import kotlin.math.*
 
 /**
  * Задание №1 - Подготовка DTO для работы с входными / выходными данными.
@@ -21,15 +34,37 @@ import java.time.LocalDate
  * - favoritesCount - число пользователей, добавивших новость в избранное
  * - commentsCount - число комментариев
  */
+@Serializable
 data class News(
     val id: Int,
     val title: String,
-    val place: String,
+    @Serializable(with = PlaceAsStringSerializer::class) val place: String,
     val description: String,
-    val siteUrl: String,
-    val favoritesCount: Int,
-    val commentsCount: Int
-)
+    @SerialName("site_url") val siteUrl: String,
+    @SerialName("favorites_count") val favoritesCount: Int,
+    @SerialName("comments_count") val commentsCount: Int,
+    @SerialName("publication_date") val publicationDate: Long,
+) {
+    val rating: Double = 1 / (1 + exp(-(favoritesCount.toDouble() / (commentsCount + 1))))
+}
+
+private val json = Json { ignoreUnknownKeys = true }
+
+object PlaceAsStringSerializer : KSerializer<String> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("News", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): String {
+        return when (val jsonElement = (decoder as JsonDecoder).decodeJsonElement()) {
+            is JsonObject -> jsonElement["id"].toString()
+            else -> "null"
+        }
+    }
+
+    override fun serialize(encoder: Encoder, value: String) {
+        encoder.encodeString(value)
+    }
+
+}
 
 /**
  * Задание #2 - Получение новостей из API
@@ -61,9 +96,13 @@ suspend fun getNews(count: Int = 100): List<News> {
                     parameters.append("page", "1")
                     parameters.append("page_size", count.toString())
                     parameters.append("location", "spb")
+                    parameters.append("fields", "id,title,place,description,site_url,favorites_count,comments_count,publication_date")
                 }
             }
-            response.body<List<News>>()
+            val bodyString: String = response.body()
+            val jsonElement = json.parseToJsonElement(bodyString)
+            val newsList = jsonElement.jsonObject["results"]?.jsonArray
+            newsList?.map { news -> json.decodeFromJsonElement<News>(news) } ?: emptyList()
         } catch (e: Exception) {
             println("Error fetching news: ${e.message}")
             emptyList()
@@ -88,8 +127,8 @@ suspend fun getNews(count: Int = 100): List<News> {
  *
  * Note: попробуйте выполнить данное задание с помощью списков и циклов, и с помощью последовательностей.
  */
-fun List<News>.getMostRatedNews(count: Int, period: ClosedRange<LocalDate>): List<News> {
-    TODO()
+suspend fun List<News>.getMostRatedNews(count: Int, period: ClosedRange<LocalDate>): List<News> {
+
 }
 
 /**
@@ -107,7 +146,12 @@ fun saveNews(path: String, news: Collection<News>) {
  * Напишите свой собственный DSL на Kotlin, с помощью которого можно было бы красиво печатать новости в консоль / файл.
  * В качестве примера можете использовать пример, представленный в документации - https://kotlinlang.org/docs/type-safe-builders.html.
  */
-fun main() {
+suspend fun main() {
+
+    val list = getNews()
+    for (news in list) {
+        println(news.toString())
+    }
 //    readme {
 //        header(level = 1) { +"Kotlin Lecture" }
 //        header(level = 2) { +"DSL" }
