@@ -45,7 +45,11 @@ data class News(
     @SerialName("comments_count") val commentsCount: Int,
     @SerialName("publication_date") val publicationDate: Long,
 ) {
-    val rating: Double = 1 / (1 + exp(-(favoritesCount.toDouble() / (commentsCount + 1))))
+    var rating: Double = 0.0
+
+    fun calculateRating() {
+        rating = 1 / (1 + exp(-(favoritesCount.toDouble() / (commentsCount + 1))))
+    }
 }
 
 private val json = Json { ignoreUnknownKeys = true }
@@ -89,27 +93,41 @@ var client: HttpClient = HttpClient(CIO) {
  * - [page], [page_size] и [order_by] - по заданию вам необходимо получить первые N новостей, отсортированных по дате публикации.
  * - [location] - в качестве значения вам необходимо выбрать ваш регион, или [spb], если вашего региона нет в списке.
  */
+
 suspend fun getNews(count: Int = 100): List<News> {
-    return client.use {
-        try {
-            val response: HttpResponse = it.get("https://kudago.com/public-api/v1.4/news/") {
-                url {
-                    parameters.append("page", "1")
-                    parameters.append("page_size", count.toString())
-                    parameters.append("location", "spb")
-                    parameters.append("fields", "id,title,place,description,site_url,favorites_count,comments_count,publication_date")
+    val maxPageSize = if (count in 1..100) count else 100
+    val pages = ceil(count / maxPageSize.toDouble()).toInt()
+    val list = LinkedList<News>()
+    var index = 1
+    while (index <= pages) {
+        val temp = client.use {
+            try {
+                val response: HttpResponse = it.get("https://kudago.com/public-api/v1.4/news/") {
+                    url {
+                        parameters.append("page", index.toString())
+                        parameters.append("page_size", maxPageSize.toString())
+                        parameters.append("location", "spb")
+                        parameters.append(
+                            "fields",
+                            "id,title,place,description,site_url,favorites_count,comments_count,publication_date"
+                        )
+                    }
                 }
+                val bodyString: String = response.body()
+                val jsonElement = json.parseToJsonElement(bodyString)
+                val newsList = jsonElement.jsonObject["results"]?.jsonArray
+                newsList?.map { news -> json.decodeFromJsonElement<News>(news) } ?: emptyList()
+            } catch (e: Exception) {
+                println("Error fetching news: ${e.message}")
+                emptyList()
             }
-            val bodyString: String = response.body()
-            val jsonElement = json.parseToJsonElement(bodyString)
-            val newsList = jsonElement.jsonObject["results"]?.jsonArray
-            newsList?.map { news -> json.decodeFromJsonElement<News>(news) } ?: emptyList()
-        } catch (e: Exception) {
-            println("Error fetching news: ${e.message}")
-            emptyList()
         }
+        list.addAll(temp)
+        ++index
     }
+    return list
 }
+
 
 /**
  * Задание #3 - Фильтрация и обработка новостей
@@ -131,28 +149,22 @@ suspend fun getNews(count: Int = 100): List<News> {
 suspend fun List<News>.getMostRatedNews(count: Int, period: ClosedRange<LocalDate>): List<News> {
     val list: MutableList<News> = LinkedList()
     var isEnd = false
+    var lastCount = count
     while (!isEnd) {
-        val filtered = client.use {
-            try {
-                val response: HttpResponse = it.get("https://kudago.com/public-api/v1.4/news/") {
-                    url {
-                        parameters.append("page", "1")
-                        parameters.append("page_size", count.toString())
-                        parameters.append("location", "spb")
-                    }
-                }
-                response.body<List<News>>()
-            } catch (e: Exception) {
-                emptyList()
-            }
-        }.filter {
+        val filtered = getNews().filter {
             val instant = Instant.ofEpochSecond(it.publicationDate)
             val localDate = instant.atOffset(ZoneOffset.ofHours(3)).toLocalDate()
             localDate in period
         }
-        if (filtered.isNotEmpty()) list.addAll(filtered)
-        isEnd = filtered.isEmpty() && list.isNotEmpty()
+        if (filtered.isNotEmpty()) {
+            list.addAll(filtered.take(lastCount))
+            lastCount -= filtered.size
+        }
+        isEnd = lastCount <= 0
     }
+
+    for (news in list) news.calculateRating()
+    list.sortByDescending { it.rating }
     return list
 }
 
@@ -172,11 +184,15 @@ fun saveNews(path: String, news: Collection<News>) {
  * В качестве примера можете использовать пример, представленный в документации - https://kotlinlang.org/docs/type-safe-builders.html.
  */
 suspend fun main() {
+//    val list = getNews(5)
 
-    val list = getNews()
+    val timeRange: ClosedRange<LocalDate> = LocalDate.parse("2024-09-15")..LocalDate.parse("2024-09-17")
+    val list: List<News> = LinkedList<News>().getMostRatedNews(5, timeRange)
+
     for (news in list) {
-        println(news.toString())
+//        println(news.toString())
     }
+
 //    readme {
 //        header(level = 1) { +"Kotlin Lecture" }
 //        header(level = 2) { +"DSL" }
