@@ -66,6 +66,14 @@ object PlaceAsStringSerializer : KSerializer<String> {
 
 }
 
+// client вынесен сюда для упрощения тестирования
+var client: HttpClient = HttpClient(CIO) {
+    install(Logging) {
+        logger = Logger.DEFAULT
+        filter { request -> request.url.host.contains("ktor.io") }
+    }
+}
+
 /**
  * Задание #2 - Получение новостей из API
  *
@@ -82,13 +90,6 @@ object PlaceAsStringSerializer : KSerializer<String> {
  * - [location] - в качестве значения вам необходимо выбрать ваш регион, или [spb], если вашего региона нет в списке.
  */
 suspend fun getNews(count: Int = 100): List<News> {
-    val client: HttpClient = HttpClient(CIO) {
-        install(Logging) {
-            logger = Logger.DEFAULT
-            filter { request -> request.url.host.contains("ktor.io") }
-        }
-    }
-
     return client.use {
         try {
             val response: HttpResponse = it.get("https://kudago.com/public-api/v1.4/news/") {
@@ -128,7 +129,31 @@ suspend fun getNews(count: Int = 100): List<News> {
  * Note: попробуйте выполнить данное задание с помощью списков и циклов, и с помощью последовательностей.
  */
 suspend fun List<News>.getMostRatedNews(count: Int, period: ClosedRange<LocalDate>): List<News> {
-
+    val list: MutableList<News> = LinkedList()
+    var isEnd = false
+    while (!isEnd) {
+        val filtered = client.use {
+            try {
+                val response: HttpResponse = it.get("https://kudago.com/public-api/v1.4/news/") {
+                    url {
+                        parameters.append("page", "1")
+                        parameters.append("page_size", count.toString())
+                        parameters.append("location", "spb")
+                    }
+                }
+                response.body<List<News>>()
+            } catch (e: Exception) {
+                emptyList()
+            }
+        }.filter {
+            val instant = Instant.ofEpochSecond(it.publicationDate)
+            val localDate = instant.atOffset(ZoneOffset.ofHours(3)).toLocalDate()
+            localDate in period
+        }
+        if (filtered.isNotEmpty()) list.addAll(filtered)
+        isEnd = filtered.isEmpty() && list.isNotEmpty()
+    }
+    return list
 }
 
 /**
