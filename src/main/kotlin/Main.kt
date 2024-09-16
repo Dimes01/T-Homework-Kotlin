@@ -16,6 +16,9 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
+import java.io.File
+import java.io.FileWriter
+import java.io.IOException
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -174,7 +177,34 @@ suspend fun List<News>.getMostRatedNews(count: Int, period: ClosedRange<LocalDat
  * Напишите функцию saveNews, которая сохранить новости в файл по указанному пути. Не забудьте проверить, что путь - валиден и по нему нет уже существующих файлов.
  */
 fun saveNews(path: String, news: Collection<News>) {
-    TODO()
+    val file = File(path)
+
+    if (!file.parentFile.exists()) {
+        throw IOException("Parent directory does not exist: ${file.parentFile.absolutePath}")
+    }
+    if (file.exists()) {
+        throw IOException("File already exists: ${file.absolutePath}")
+    }
+
+    FileWriter(file).use { writer ->
+        writer.write("id,title,place,description,site_url,favorites_count,comments_count,publicationDate\n")
+        for (elem in news) {
+            var str = "${elem.id},"
+            str += "${escapeCsv(elem.title)},"
+            str += "${escapeCsv(elem.place)},"
+            str += "${escapeCsv(elem.description)},"
+            str += "${escapeCsv(elem.siteUrl)},"
+            str += "${elem.favoritesCount},"
+            str += "${elem.commentsCount},"
+            str += "${elem.publicationDate}\n"
+            writer.write(str)
+        }
+    }
+}
+
+private fun escapeCsv(value: String?): String {
+    if (value.isNullOrEmpty()) return ""
+    return "\"${value.replace("\"", "\"\"")}\"" // Экранирование кавычек
 }
 
 /**
@@ -186,12 +216,15 @@ fun saveNews(path: String, news: Collection<News>) {
 suspend fun main() {
 //    val list = getNews(5)
 
-    val timeRange: ClosedRange<LocalDate> = LocalDate.parse("2024-09-15")..LocalDate.parse("2024-09-17")
-    val list: List<News> = LinkedList<News>().getMostRatedNews(5, timeRange)
-
-    for (news in list) {
+//    val timeRange: ClosedRange<LocalDate> = LocalDate.parse("2024-09-15")..LocalDate.parse("2024-09-17")
+//    val list: List<News> = LinkedList<News>().getMostRatedNews(5, timeRange)
+//
+//    for (news in list) {
 //        println(news.toString())
-    }
+//    }
+
+    val list = getNews(5)
+    saveNews("src/main/resources/top5news.csv", list)
 
 //    readme {
 //        header(level = 1) { +"Kotlin Lecture" }
