@@ -16,6 +16,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
+import org.example.models.HTML
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
@@ -213,46 +214,23 @@ private fun escapeCsv(value: String?): String {
  * Напишите свой собственный DSL на Kotlin, с помощью которого можно было бы красиво печатать новости в консоль / файл.
  * В качестве примера можете использовать пример, представленный в документации - https://kotlinlang.org/docs/type-safe-builders.html.
  */
-class NewsDSL {
-    private val content = StringBuilder()
-
-    fun header(level: Int, block: () -> String) {
-        val prefix = "#".repeat(level)
-        content.appendLine("$prefix ${block()}")
-    }
-
-    fun text(block: () -> String) {
-        content.appendLine(block())
-    }
-
-    fun b(block: () -> String) {
-        content.appendLine("**${block()}**")
-    }
-
-    fun link(link: String, text: String) {
-        content.appendLine("[$text]($link)")
-    }
-
-    override fun toString(): String {
-        return content.toString()
-    }
-}
-
-fun news(block: NewsDSL.() -> Unit): String {
-    val newsDSL = NewsDSL()
-    newsDSL.block()
-    return newsDSL.toString()
+fun html(init: HTML.() -> Unit): HTML {
+    val html = HTML()
+    html.init()
+    return html
 }
 
 suspend fun main() {
     val list = getNews(5)
     for (newsItem in list) {
-        val output = news {
-            header(level = 1) { newsItem.title }
-            b { "Published on: ${newsItem.place}" }
-            text { newsItem.description }
-            link(link = newsItem.siteUrl, text = "Read more")
-            text { "Favorites: ${newsItem.favoritesCount}, Comments: ${newsItem.commentsCount}, Rating: ${newsItem.rating}" }
+        val output = html {
+            body {
+                h1 { +newsItem.title }
+                b { +"Published on: ${newsItem.place}" }
+                p { newsItem.description }
+                a(href = newsItem.siteUrl) { +"Read more" }
+                p { +"Favorites: ${newsItem.favoritesCount}, Comments: ${newsItem.commentsCount}, Rating: ${newsItem.rating}" }
+            }
         }
         println(output)
     }
