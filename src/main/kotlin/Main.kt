@@ -103,7 +103,8 @@ suspend fun getNews(count: Int = 100): List<News> {
     val pages = ceil(count / maxPageSize.toDouble()).toInt()
     val list = LinkedList<News>()
     var index = 1
-    while (index <= pages) {
+    var isError = false
+    while (index <= pages && !isError) {
         val temp = client.use {
             try {
                 val response: HttpResponse = it.get("https://kudago.com/public-api/v1.4/news/") {
@@ -123,6 +124,7 @@ suspend fun getNews(count: Int = 100): List<News> {
                 newsList?.map { news -> json.decodeFromJsonElement<News>(news) } ?: emptyList()
             } catch (e: Exception) {
                 println("Error fetching news: ${e.message}")
+                isError = true
                 emptyList()
             }
         }
@@ -152,6 +154,7 @@ suspend fun getNews(count: Int = 100): List<News> {
  * Note: попробуйте выполнить данное задание с помощью списков и циклов, и с помощью последовательностей.
  */
 suspend fun List<News>.getMostRatedNews(count: Int, period: ClosedRange<LocalDate>): List<News> {
+    if (period.start >= period.endInclusive) return emptyList()
     val list: MutableList<News> = LinkedList()
     var isEnd = false
     var lastCount = count
@@ -222,20 +225,20 @@ fun html(init: HTML.() -> Unit): HTML {
 }
 
 suspend fun main() {
-    val list = getNews(5)
-
-    for (newsItem in list) {
-        val output = html {
-            body {
-                h1 { +newsItem.title }
-                b { +"Published on: ${newsItem.place}" }
-                p { +newsItem.description }
-                a(href = newsItem.siteUrl) { +"Read more" }
-                p { +"Favorites: ${newsItem.favoritesCount}, Comments: ${newsItem.commentsCount}, Rating: ${newsItem.rating}" }
-            }
-        }
-        println(output)
-    }
+//    val list = getNews(5)
+//
+//    for (newsItem in list) {
+//        val output = html {
+//            body {
+//                h1 { +newsItem.title }
+//                b { +"Published on: ${newsItem.place}" }
+//                p { +newsItem.description }
+//                a(href = newsItem.siteUrl) { +"Read more" }
+//                p { +"Favorites: ${newsItem.favoritesCount}, Comments: ${newsItem.commentsCount}, Rating: ${newsItem.rating}" }
+//            }
+//        }
+//        println(output)
+//    }
 
 //    // Задача 2
 //    val list = getNews(5)
@@ -243,12 +246,12 @@ suspend fun main() {
 //        println(news.toString())
 //    }
 
-//    // Задача 3
-//    val timeRange: ClosedRange<LocalDate> = LocalDate.parse("2024-09-15")..LocalDate.parse("2024-09-17")
-//    val list: List<News> = LinkedList<News>().getMostRatedNews(5, timeRange)
-//    for (news in list) {
-//        println(news.toString())
-//    }
+    // Задача 3
+    val timeRange: ClosedRange<LocalDate> = LocalDate.parse("2024-09-15")..LocalDate.parse("2024-09-15")
+    val list: List<News> = LinkedList<News>().getMostRatedNews(5, timeRange)
+    for (news in list) {
+        println(news.toString())
+    }
 
 //    // Задача 4
 //    val list = getNews(5)
