@@ -56,8 +56,7 @@ data class News(
     }
 }
 
-private val json = Json { ignoreUnknownKeys = true }
-
+// сериализатор для поля place в классе News
 object PlaceAsStringSerializer : KSerializer<String> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("News", PrimitiveKind.STRING)
 
@@ -71,8 +70,9 @@ object PlaceAsStringSerializer : KSerializer<String> {
     override fun serialize(encoder: Encoder, value: String) {
         encoder.encodeString(value)
     }
-
 }
+
+private val json = Json { ignoreUnknownKeys = true }
 
 // client вынесен сюда для упрощения тестирования
 var client: HttpClient = HttpClient(CIO) {
@@ -129,6 +129,7 @@ suspend fun getNews(count: Int = 100): List<News> {
         list.addAll(temp)
         ++index
     }
+
     return list
 }
 
@@ -222,12 +223,13 @@ fun html(init: HTML.() -> Unit): HTML {
 
 suspend fun main() {
     val list = getNews(5)
+
     for (newsItem in list) {
         val output = html {
             body {
                 h1 { +newsItem.title }
                 b { +"Published on: ${newsItem.place}" }
-                p { newsItem.description }
+                p { +newsItem.description }
                 a(href = newsItem.siteUrl) { +"Read more" }
                 p { +"Favorites: ${newsItem.favoritesCount}, Comments: ${newsItem.commentsCount}, Rating: ${newsItem.rating}" }
             }
