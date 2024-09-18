@@ -213,33 +213,64 @@ private fun escapeCsv(value: String?): String {
  * Напишите свой собственный DSL на Kotlin, с помощью которого можно было бы красиво печатать новости в консоль / файл.
  * В качестве примера можете использовать пример, представленный в документации - https://kotlinlang.org/docs/type-safe-builders.html.
  */
-suspend fun main() {
-//    val list = getNews(5)
+class NewsDSL {
+    private val content = StringBuilder()
 
-//    val timeRange: ClosedRange<LocalDate> = LocalDate.parse("2024-09-15")..LocalDate.parse("2024-09-17")
-//    val list: List<News> = LinkedList<News>().getMostRatedNews(5, timeRange)
-//
+    fun header(level: Int, block: () -> String) {
+        val prefix = "#".repeat(level)
+        content.appendLine("$prefix ${block()}")
+    }
+
+    fun text(block: () -> String) {
+        content.appendLine(block())
+    }
+
+    fun b(block: () -> String) {
+        content.appendLine("**${block()}**")
+    }
+
+    fun link(link: String, text: String) {
+        content.appendLine("[$text]($link)")
+    }
+
+    override fun toString(): String {
+        return content.toString()
+    }
+}
+
+fun news(block: NewsDSL.() -> Unit): String {
+    val newsDSL = NewsDSL()
+    newsDSL.block()
+    return newsDSL.toString()
+}
+
+suspend fun main() {
+    val list = getNews(5)
+    for (newsItem in list) {
+        val output = news {
+            header(level = 1) { newsItem.title }
+            b { "Published on: ${newsItem.place}" }
+            text { newsItem.description }
+            link(link = newsItem.siteUrl, text = "Read more")
+            text { "Favorites: ${newsItem.favoritesCount}, Comments: ${newsItem.commentsCount}, Rating: ${newsItem.rating}" }
+        }
+        println(output)
+    }
+
+//    // Задача 2
+//    val list = getNews(5)
 //    for (news in list) {
 //        println(news.toString())
 //    }
 
-    val list = getNews(5)
-    saveNews("src/main/resources/top5news.csv", list)
-
-//    readme {
-//        header(level = 1) { +"Kotlin Lecture" }
-//        header(level = 2) { +"DSL" }
-//
-//        text {
-//            +("Today we will try to recreate ${bold("DSL")} from this article: ${link(link = "https://kotlinlang.org/docs/type-safe-builders.html", text = "Kotlin Docs")}!!!")
-//            +"It is so ${underlined("fascinating and interesting")}!"
-//            +code(language = ProgrammingLanguage.KOTLIN) {
-//                +"""
-//                    fun main() {
-//                        println("Hello world!")
-//                    }
-//                """.trimIndent()
-//            }
-//        }
+//    // Задача 3
+//    val timeRange: ClosedRange<LocalDate> = LocalDate.parse("2024-09-15")..LocalDate.parse("2024-09-17")
+//    val list: List<News> = LinkedList<News>().getMostRatedNews(5, timeRange)
+//    for (news in list) {
+//        println(news.toString())
 //    }
+
+//    // Задача 4
+//    val list = getNews(5)
+//    saveNews("src/main/resources/top5news.csv", list)
 }
