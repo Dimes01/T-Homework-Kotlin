@@ -6,10 +6,14 @@ import kotlinx.coroutines.runBlocking
 import org.example.News
 import org.example.getMostRatedNews
 import org.example.getNews
+import org.example.saveNews
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.assertThrows
+import java.io.File
+import java.io.IOException
 import java.time.LocalDate
 import java.util.*
 
@@ -157,15 +161,28 @@ class MainKtTest {
         }
     }
 
-    @Disabled
     @Test
     fun `save news successful`() {
-
+        val list = listOf(news1, news2)
+        val file = File.createTempFile("test", ".csv")
+        try {
+            if (file.exists()) {
+                file.delete()
+            }
+            saveNews(file.path, list)
+            val expected = "id,title,place,description,site_url,favorites_count,comments_count,publicationDate\n" +
+                    "1,\"News Title 1\",\"1\",\"Description 1\",\"https://example.com/1\",10,2,1726496880\n" +
+                    "2,\"News Title 2\",\"null\",\"Description 2\",\"https://example.com/2\",5,1,1726496880\n"
+            val real = file.readText()
+            assertEquals(expected, real)
+        } finally {
+            file.delete()
+        }
     }
 
-    @Disabled
     @Test
     fun `save news in existed file`() {
-
+        val list = listOf(news1, news2)
+        assertThrows<IOException>{ saveNews("src/test/resources/existedFile.csv", list) }
     }
 }
