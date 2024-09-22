@@ -225,7 +225,7 @@ fun html(init: HTML.() -> Unit): HTML {
 }
 
 suspend fun main() {
-    val list = getNews(5)
+    var list = getNews(5)
 
     for (newsItem in list) {
         val output = html {
@@ -240,20 +240,20 @@ suspend fun main() {
         println(output)
     }
 
-//    // Задача 2
-//    val list = getNews(5)
-//    for (news in list) {
-//        println(news.toString())
-//    }
+    // Задача 2
+    list = getNews(5)
+    for (news in list) {
+        println(news.toString())
+    }
 
-//    // Задача 3
-//    val timeRange: ClosedRange<LocalDate> = LocalDate.parse("2024-09-15")..LocalDate.parse("2024-09-15")
-//    val list: List<News> = LinkedList<News>().getMostRatedNews(5, timeRange)
-//    for (news in list) {
-//        println(news.toString())
-//    }
+    // Задача 3
+    val timeRange: ClosedRange<LocalDate> = LocalDate.parse("2024-09-15")..LocalDate.parse("2024-09-15")
+    list = LinkedList<News>().getMostRatedNews(5, timeRange)
+    for (news in list) {
+        println(news.toString())
+    }
 
-//    // Задача 4
-//    val list = getNews(5)
-//    saveNews("src/main/resources/top5news.csv", list)
+    // Задача 4
+    list = getNews(5)
+    saveNews("src/main/resources/top5news.csv", list)
 }
