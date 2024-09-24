@@ -2,11 +2,10 @@ package com.example.homework5.models
 
 data class Location(
     val id: Long,
-    val title: String,
     val slug: String,
-    val address: String,
-    val location: String,
-    val site_url: String,
-    val is_closed : Boolean,
+    val name: String,
+    val timezone: String,
+    val language: String,
+    val currency: String,
 )
 
