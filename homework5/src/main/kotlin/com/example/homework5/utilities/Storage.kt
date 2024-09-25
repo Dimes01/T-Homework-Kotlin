@@ -1,6 +1,7 @@
 package com.example.homework5.utilities
 
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -16,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap
  * 3. Классы-прослойки, которые наследуются от сущностей и реализуют интерфейс `ModelWithId`,
  * но это показалось муторно...
  */
+@Component
 class Storage<T> {
     private val storage = ConcurrentHashMap<Int, T>()
     private val logger = LoggerFactory.getLogger(Storage::class.java)

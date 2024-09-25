@@ -2,10 +2,11 @@ package com.example.homework5.services
 
 import com.example.homework5.models.Category
 import com.example.homework5.models.Location
-import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 
+@Service
 class KudaGOService {
     private val logger = LoggerFactory.getLogger(KudaGOService::class.java)
     private val restTemplate = RestTemplate()
