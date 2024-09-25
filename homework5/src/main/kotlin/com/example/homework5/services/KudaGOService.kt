@@ -16,14 +16,7 @@ class KudaGOService {
     fun getCategories(): List<Category> {
         logger.info("Method 'getCategories' started")
 
-        var response = restTemplate.getForObject("$baseUrl/event-categories/?lang=ru", Array<Category>::class.java)
-        if (response == null)
-            logger.warn("Method 'getCategories': response for event categories is null")
-        else
-            logger.debug("Method 'getCategories': event categories are received")
-        val eventCategories = response?.toList() ?: emptyList()
-
-        response = restTemplate.getForObject("$baseUrl/place-categories/?lang=ru", Array<Category>::class.java)
+        val response = restTemplate.getForObject("$baseUrl/place-categories/?lang=ru", Array<Category>::class.java)
         if (response == null)
             logger.warn("Method 'getCategories': response for place categories is null")
         else
@@ -31,7 +24,7 @@ class KudaGOService {
         val placeCategories = response?.toList() ?: emptyList()
 
         logger.info("Method 'getCategories' finished")
-        return eventCategories + placeCategories
+        return placeCategories
     }
 
     fun getLocations(): List<Location> {
