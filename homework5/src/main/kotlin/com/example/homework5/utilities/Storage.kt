@@ -56,7 +56,7 @@ class Storage<T> {
         return result
     }
 
-    fun delete(id: Long, entity: T): Boolean {
+    fun delete(id: Long): Boolean {
         logger.info("Method 'delete': started")
         val result = storage.remove(id) != null
         if (result)

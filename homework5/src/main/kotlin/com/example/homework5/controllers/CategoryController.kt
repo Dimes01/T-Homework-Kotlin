@@ -45,20 +45,23 @@ class CategoryController(
     }
 
     @PutMapping("/{id}")
-    fun putUpdateCategory(@PathVariable id: Long, @RequestBody category: Category) {
+    fun putUpdateCategory(@PathVariable id: Long, @RequestBody category: Category): ResponseEntity<Category> {
         logger.info("Method 'putUpdateCategory' is started")
         val elem = storage.update(id, category)
         if (elem == null)
             logger.warn("Method 'putUpdateCategory': could not update element")
         logger.info("Method 'putUpdateCategory' is finished")
+        return ResponseEntity.ok(elem)
     }
 
     @DeleteMapping("/{id}")
-    fun deleteCategory(@PathVariable id: Long, @RequestBody category: Category) {
+    fun deleteCategory(@PathVariable id: Long): ResponseEntity<Category> {
         logger.info("Method 'deleteCategory' is started")
-        val isDelete = storage.delete(id, category)
+        val deletingElem = storage.getById(id)
+        val isDelete = storage.delete(id)
         if (!isDelete)
             logger.warn("Method 'deleteCategory': could not delete element")
         logger.info("Method 'deleteCategory' is finished")
+        return ResponseEntity.ok(deletingElem)
     }
 }

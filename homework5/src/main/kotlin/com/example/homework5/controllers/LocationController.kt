@@ -38,20 +38,23 @@ class LocationController(
     }
 
     @PutMapping("/{id}")
-    fun putUpdateLocation(@PathVariable id: Long, @RequestBody location: Location) {
+    fun putUpdateLocation(@PathVariable id: Long, @RequestBody location: Location): ResponseEntity<Location> {
         logger.info("Method 'putUpdateLocation' is started")
         val elem = storage.update(id, location)
         if (elem == null)
             logger.warn("Method 'putUpdateLocation': could not update element")
         logger.info("Method 'putUpdateLocation' is finished")
+        return ResponseEntity.ok(elem)
     }
 
     @DeleteMapping("/{id}")
-    fun deleteLocation(@PathVariable id: Long, @RequestBody location: Location) {
+    fun deleteLocation(@PathVariable id: Long): ResponseEntity<Location> {
         logger.info("Method 'deleteLocation' is started")
-        val isDelete = storage.delete(id, location)
+        val deletingElem = storage.getById(id)
+        val isDelete = storage.delete(id)
         if (!isDelete)
             logger.warn("Method 'deleteLocation': could not delete element")
         logger.info("Method 'deleteLocation' is finished")
+        return ResponseEntity.ok(deletingElem)
     }
 }

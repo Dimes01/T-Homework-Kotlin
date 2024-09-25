@@ -3,3 +3,4 @@ plugins {
 }
 rootProject.name = "T-Homework-Kotlin"
 include("homework5")
+include("starter")
