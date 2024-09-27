@@ -1,7 +1,7 @@
 package org.example.models
 
-import annotations.HTMLTagMarker
-import interfaces.Element
+import org.example.annotations.HTMLTagMarker
+import org.example.interfaces.Element
 
 @HTMLTagMarker
 abstract class Tag(val name: String) : Element {

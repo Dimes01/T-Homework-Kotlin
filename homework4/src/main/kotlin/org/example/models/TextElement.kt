@@ -1,6 +1,6 @@
 package org.example.models
 
-import interfaces.Element
+import org.example.interfaces.Element
 
 class TextElement(val text: String) : Element {
     override fun render(builder: StringBuilder, indent: String) {
