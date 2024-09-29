@@ -7,9 +7,10 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 
 @Service
-class KudaGOService {
+class KudaGOService(
+    private val restTemplate: RestTemplate,
+) {
     private val logger = LoggerFactory.getLogger(KudaGOService::class.java)
-    private val restTemplate = RestTemplate()
     private val versionApi = 1.4
     private val baseUrl = "https://kudago.com/public-api/v$versionApi"
 

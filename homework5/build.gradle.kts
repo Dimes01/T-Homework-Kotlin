@@ -19,12 +19,14 @@ repositories {
 }
 
 dependencies {
-//	implementation(project(":starter"))
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-aop")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2")
+
+	testImplementation("org.mockito:mockito-core:5.13.0")
+	testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
