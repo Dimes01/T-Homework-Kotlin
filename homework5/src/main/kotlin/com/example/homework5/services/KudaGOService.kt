@@ -8,7 +8,7 @@ import org.springframework.web.client.RestTemplate
 
 @Service
 class KudaGOService(
-    private val restTemplate: RestTemplate,
+    private val restTemplate: RestTemplate = RestTemplate(),
 ) {
     private val logger = LoggerFactory.getLogger(KudaGOService::class.java)
     private val versionApi = 1.4
