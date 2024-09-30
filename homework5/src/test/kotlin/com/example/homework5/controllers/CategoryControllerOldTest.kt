@@ -1,10 +1,8 @@
 package com.example.homework5.controllers;
 
 import com.github.tomakehurst.wiremock.client.WireMock.*
-import com.github.tomakehurst.wiremock.junit5.WireMockExtension
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
@@ -22,7 +20,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get a
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-class CategoryControllerTest {
+class CategoryControllerOldTest {
 
     @Autowired
     private lateinit var mockMvc: MockMvc
@@ -38,7 +36,10 @@ class CategoryControllerTest {
                         {"id": 1, "name": "Museums"},
                         {"id": 2, "name": "Parks"}
                     ]
-                """.trimIndent())))
+                    """.trimIndent()
+                )
+            )
+        )
     }
 
     @Test
