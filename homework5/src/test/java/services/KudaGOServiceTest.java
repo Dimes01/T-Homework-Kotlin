@@ -13,6 +13,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -106,7 +108,7 @@ public class KudaGOServiceTest {
 
         // Act
         // Assert
-        assertThrows(RestClientException.class, (Executable) kudaGOService.getCategories());
+        assertThrows(RestClientException.class, () -> kudaGOService.getCategories());
     }
 
     @Test
@@ -119,6 +121,6 @@ public class KudaGOServiceTest {
 
         // Act
         // Assert
-        assertThrows(RestClientException.class, (Executable) kudaGOService.getLocations());
+        assertThrows(RestClientException.class, () -> kudaGOService.getLocations());
     }
 }
