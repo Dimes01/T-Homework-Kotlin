@@ -23,15 +23,15 @@ public class StorageTest {
 
     private void set_up(Category[] elements) {
         storage = new Storage<>();
-        for (int id = 1; id < elements.length; ++id)
+        for (int id = 1; id <= elements.length; ++id)
             storage.save(id, elements[id - 1]);
     }
 
 
     private Stream<Arguments> getAll_goodAndBadSituations() {
         return Stream.of(
-            Arguments.of(new Category[] {}),
-            Arguments.of(initElements)
+            Arguments.of((Object) new Category[] {}),
+            Arguments.of((Object) initElements)
         );
     }
 
