@@ -32,10 +32,16 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("org.wiremock:wiremock:3.9.1")
+	testImplementation("org.testcontainers:testcontainers:1.20.2")
+	testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
+	testImplementation("org.testcontainers:junit-jupiter:1.20.2")
 
-	// Ensure Jetty 11 dependencies are included for WireMock 3.x
-	testImplementation("org.eclipse.jetty:jetty-server:12.0.13")
-	testImplementation("org.eclipse.jetty.ee10:jetty-ee10-servlet:12.0.13")
+	testImplementation("org.wiremock:wiremock-jetty12:3.9.1")
+	testImplementation("org.wiremock.integrations.testcontainers:wiremock-testcontainers-module:1.0-alpha-14")
+	testImplementation("org.eclipse.jetty:jetty-servlet:11.0.24")
+	testImplementation("org.eclipse.jetty:jetty-servlets:11.0.24")
+	testImplementation("org.eclipse.jetty:jetty-webapp:11.0.24")
+	testImplementation("org.eclipse.jetty.http2:http2-server:11.0.24")
 
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
