@@ -3,22 +3,20 @@ package com.example.homework5.services
 import com.example.homework5.models.Category
 import com.example.homework5.models.Location
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
-import org.springframework.web.client.RestTemplate
 
 @Service
 class KudaGOService(
     private val restClient: RestClient,
+    private val baseUrl: String
 ) {
     private val logger = LoggerFactory.getLogger(KudaGOService::class.java)
 
     fun getCategories(): List<Category> {
         logger.info("Method 'getCategories' started")
-
         val response = restClient.get()
-            .uri("/place-categories/?lang=ru")
+            .uri("$baseUrl/public-api/v1.4/place-categories?lang=ru")
             .retrieve()
             .body(Array<Category>::class.java)
         if (response == null)
@@ -34,7 +32,7 @@ class KudaGOService(
     fun getLocations(): List<Location> {
         logger.info("Method 'getLocations' started")
         val response = restClient.get()
-            .uri("/locations/?lang=ru&fields=slug,name,timezone,coords,language,currency")
+            .uri("$baseUrl/public-api/v1.4/locations?lang=ru&fields=slug,name,timezone,coords,language,currency")
             .retrieve()
             .body(Array<Location>::class.java)
         if (response == null)

@@ -1,13 +1,13 @@
-package utilities
+package utilities;
 
 import com.example.homework5.models.Category;
 import com.example.homework5.models.Location;
 import com.example.homework5.services.KudaGOService;
 import com.example.homework5.utilities.Storage;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.common.Json;
 import org.junit.jupiter.api.*;
 
-import org.junit.jupiter.api.Assertions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -16,45 +16,23 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.utility.DockerImageName;
 import org.wiremock.integrations.testcontainers.WireMockContainer;
 
+import java.util.Arrays;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class InitializerTest {
-    private static final String responseBodyCategories = """
-                            [
-                                {
-                                    "id": 1,
-                                    "slug": "cat1",
-                                    "category": "category1"
-                                },
-                                {
-                                    "id": 2,
-                                    "slug": "cat2",
-                                    "category": "category2"
-                                }
-                            ]""";
-    private static final String responseBodyLocations = """
-                            [
-                                {
-                                    "slug": "cat1",
-                                    "name": "name1",
-                                    "timezone": "timezone1",
-                                    "language": "language1",
-                                    "currency": "currency1"
-                                },
-                                {
-                                    "slug": "cat2",
-                                    "name": "name2",
-                                    "timezone": "timezone2",
-                                    "language": "language2",
-                                    "currency": "currency2"
-                                }
-                            ]""";
+    private static final Category[] responseBodyCategories = new Category[] {
+            new Category(1, "cat1", "category1"),
+            new Category(2, "cat2", "category2"),
+    };
+    private static final Location[] responseBodyLocations = new Location[] {
+            new Location("cat1", "name1", "timezone1", "language1", "currency1"),
+            new Location("cat2", "name2", "timezone2", "language2", "currency2"),
+    };
+    private static final String responseBodyCategoriesString = Json.write(responseBodyCategories);
+    private static final String responseBodyLocationsString = Json.write(responseBodyLocations);
     private static RestClient restClient;
     private static KudaGOService kudaGOService;
-
-    @Autowired
-    private Storage<Category> categoryStorage;
-
-    @Autowired
-    private Storage<Location> locationStorage;
 
     @Container
     private static final WireMockContainer wireMockServer = new WireMockContainer(DockerImageName.parse("wiremock/wiremock:3.9.1"))
@@ -68,25 +46,26 @@ class InitializerTest {
     @BeforeAll
     public static void setUp() {
         wireMockServer.start();
-        restClient = RestClient
-                .builder()
-                .baseUrl("http://" + wireMockServer.getHost() + ":" + wireMockServer.getFirstMappedPort() + "/public-api/v1.4")
-                .build();
-        kudaGOService = new KudaGOService(restClient);
+        var baseUrl = "http://" + wireMockServer.getHost() + ":" + wireMockServer.getFirstMappedPort();
+        restClient = RestClient.create();
+        kudaGOService = new KudaGOService(restClient, baseUrl);
 
         WireMock.configureFor(wireMockServer.getHost(), wireMockServer.getFirstMappedPort());
 
-        WireMock.stubFor(WireMock.get(WireMock.urlPathEqualTo("/public-api/v1.4/place-categories/?lang=ru"))
+        WireMock.stubFor(WireMock.get(WireMock.urlPathEqualTo("/public-api/v1.4/place-categories"))
+                .withQueryParam("lang", WireMock.equalTo("ru"))
                 .willReturn(WireMock.aResponse()
                         .withHeader("Content-Type", "application/json")
-                        .withBody(responseBodyCategories)
+                        .withBody(responseBodyCategoriesString)
                 )
         );
 
-        WireMock.stubFor(WireMock.get(WireMock.urlPathEqualTo("/public-api/v1.4/locations/?lang=ru&fields=slug,name,timezone,coords,language,currency"))
+        WireMock.stubFor(WireMock.get(WireMock.urlPathEqualTo("/public-api/v1.4/locations"))
+                .withQueryParam("lang", WireMock.equalTo("ru"))
+                .withQueryParam("fields", WireMock.equalTo("slug,name,timezone,coords,language,currency"))
                 .willReturn(WireMock.aResponse()
                         .withHeader("Content-Type", "application/json")
-                        .withBody(responseBodyLocations)
+                        .withBody(responseBodyLocationsString)
                 )
         );
     }
@@ -98,8 +77,13 @@ class InitializerTest {
 
     @Test
     public void run() {
+        // Arrange
+        // Act
         var categories = kudaGOService.getCategories();
         var locations = kudaGOService.getLocations();
 
+        // Assert
+        assertEquals(Arrays.stream(responseBodyCategories).toList(), categories);
+        assertEquals(Arrays.stream(responseBodyLocations).toList(), locations);
     }
 }

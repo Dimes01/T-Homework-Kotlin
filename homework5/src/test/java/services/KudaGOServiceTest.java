@@ -81,10 +81,11 @@ public class KudaGOServiceTest {
             new Location("slug1", "name1", "timezone1", "language1", "currency1"),
             new Location("slug2", "name2", "timezone2", "language2", "currency2")
         };
-        Mockito.when(restClient.getForObject(
-                Mockito.anyString(),
-                Mockito.eq(Location[].class)
-        )).thenReturn(mockLocations);
+        Mockito.when(restClient.get()
+                .uri(Mockito.anyString())
+                .retrieve()
+                .body(Location[].class))
+                .thenReturn(mockLocations);
 
         // Act
         var locations = kudaGOService.getLocations();
@@ -99,10 +100,11 @@ public class KudaGOServiceTest {
     @Test
     public void getLocations_responseIsNull_emptyList() {
         // Arrange
-        Mockito.when(restClient.getForObject(
-                Mockito.anyString(),
-                Mockito.eq(Location[].class)
-        )).thenReturn(null);
+        Mockito.when(restClient.get()
+                .uri(Mockito.anyString())
+                .retrieve()
+                .body(Location[].class))
+                .thenReturn(null);
 
         // Act
         var locations = kudaGOService.getLocations();
@@ -114,10 +116,11 @@ public class KudaGOServiceTest {
     @Test
     public void getCategories_throw_RestClientException() {
         // Arrange
-        Mockito.when(restClient.getForObject(
-                Mockito.anyString(),
-                Mockito.eq(Category[].class)
-        )).thenThrow(RestClientException.class);
+        Mockito.when(restClient.get()
+                .uri(Mockito.anyString())
+                .retrieve()
+                .body(Category[].class))
+                .thenThrow(RestClientException.class);
 
         // Act
         // Assert
@@ -127,10 +130,11 @@ public class KudaGOServiceTest {
     @Test
     public void getLocations_throw_RestClientException() {
         // Arrange
-        Mockito.when(restClient.getForObject(
-                Mockito.anyString(),
-                Mockito.eq(Location[].class)
-        )).thenThrow(RestClientException.class);
+        Mockito.when(restClient.get()
+                .uri(Mockito.anyString())
+                .retrieve()
+                .body(Location[].class))
+                .thenThrow(RestClientException.class);
 
         // Act
         // Assert
