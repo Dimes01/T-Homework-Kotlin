@@ -2,6 +2,8 @@ package controllers;
 
 import com.example.homework5.Homework5Application;
 import com.example.homework5.controllers.CategoryController;
+import com.example.homework5.models.Category;
+import com.github.tomakehurst.wiremock.common.Json;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -20,61 +22,80 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = Homework5Application.class)
 @AutoConfigureMockMvc
 public class CategoryControllerTest {
-    // TODO: исправить IllegalStateException (Failed to load ApplicationContext)
 
     @Autowired
     private MockMvc mockMvc;
 
+    private final String categoryString = Json.write(new Category(1, "slug1", "name1"));
+
     @Test
-    public void getAllCategories() throws Exception {
+    public void getAllCategories_return200() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/places/categories"))
-                .andExpect(status().isOk())
-                .andDo(print());
+                .andExpect(status().isOk());
     }
 
     @Test
-    public void getCategoryById() throws Exception {
+    public void getCategoryById_existedId_return200() throws Exception {
+        mockMvc.perform(post("/api/v1/places/categories/{0}", "1")
+                        .content(categoryString)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
         mockMvc.perform(get("/api/v1/places/categories/{0}", "1"))
-                .andExpect(status().isOk())
-                .andDo(print());
+                .andExpect(status().isOk());
     }
 
     @Test
-    public void postCreateCategory() throws Exception {
-        String category = """
-                {
-                    "id": 1,
-                    "slug": "slug1",
-                    "name": "name1"
-                }""";
+    public void getCategoryById_notExistedId_return400() throws Exception {
+        mockMvc.perform(get("/api/v1/places/categories/{0}", "-1"))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void postCreateCategory_return200() throws Exception {
+        mockMvc.perform(post("/api/v1/places/categories/{0}", "1")
+                        .content(categoryString)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void putUpdateCategory_existedId_return200() throws Exception {
+        String newCategory = Json.write(new Category(1, "newSlug1", "name1"));
 
         mockMvc.perform(post("/api/v1/places/categories/{0}", "1")
-                        .content(category)
+                        .content(newCategory)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andDo(print());
-    }
-
-    @Test
-    public void putUpdateCategory() throws Exception {
-        String category = """
-                {
-                    "id": 1,
-                    "slug": "newSlug1",
-                    "name": "name1"
-                }""";
+                .andExpect(status().isOk());
 
         mockMvc.perform(put("/api/v1/places/categories/{0}", "1")
-                        .content(category)
+                        .content(newCategory)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andDo(print());
+                .andExpect(status().isOk());
     }
 
     @Test
-    public void deleteCategory() throws Exception {
+    public void putUpdateCategory_notExistedId_return400() throws Exception {
+        mockMvc.perform(put("/api/v1/places/categories/{0}", "-1")
+                        .content(categoryString)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void deleteCategory_existedId_return200() throws Exception {
+        mockMvc.perform(post("/api/v1/places/categories/{0}", "1")
+                        .content(categoryString)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
         mockMvc.perform(delete("/api/v1/places/categories/{0}", "1"))
-                .andExpect(status().isOk())
-                .andDo(print());
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void deleteCategory_notExistedId_return400() throws Exception {
+        mockMvc.perform(delete("/api/v1/places/categories/{0}", "1"))
+                .andExpect(status().is4xxClientError());
     }
 }

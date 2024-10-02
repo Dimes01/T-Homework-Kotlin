@@ -9,39 +9,32 @@ import org.springframework.web.client.RestClient
 @Service
 class KudaGOService(
     private val restClient: RestClient,
-    private val baseUrl: String
 ) {
     private val logger = LoggerFactory.getLogger(KudaGOService::class.java)
 
     fun getCategories(): List<Category> {
         logger.info("Method 'getCategories' started")
-        val response = restClient.get()
-            .uri("$baseUrl/public-api/v1.4/place-categories?lang=ru")
+        return restClient.get()
+            .uri("/public-api/v1.4/place-categories?lang=ru")
             .retrieve()
-            .body(Array<Category>::class.java)
-        if (response == null)
-            logger.warn("Method 'getCategories': response for place categories is null")
-        else
-            logger.debug("Method 'getCategories': place categories are received")
-        val placeCategories = response?.toList() ?: emptyList()
-
-        logger.info("Method 'getCategories' finished")
-        return placeCategories
+            .body(Array<Category>::class.java)?.toList()
+            .also { logger.info("Method 'getCategories' finished") }
+            ?: run {
+                logger.warn("Method 'getCategories': response for place categories is null")
+                emptyList()
+            }
     }
 
     fun getLocations(): List<Location> {
         logger.info("Method 'getLocations' started")
-        val response = restClient.get()
-            .uri("$baseUrl/public-api/v1.4/locations?lang=ru&fields=slug,name,timezone,coords,language,currency")
+        return restClient.get()
+            .uri("/public-api/v1.4/locations?lang=ru&fields=slug,name,timezone,coords,language,currency")
             .retrieve()
-            .body(Array<Location>::class.java)
-        if (response == null)
-            logger.warn("Method 'getLocations': response is null")
-        else
-            logger.debug("Method 'getLocations': event categories are received")
-        val locations = response?.toList() ?: emptyList()
-
-        logger.info("Method 'getLocations' finished")
-        return locations
+            .body(Array<Location>::class.java)?.toList()
+            .also { logger.info("Method 'getLocations' finished") }
+            ?: run {
+                logger.warn("Method 'getLocations': response for locations is null")
+                emptyList()
+            }
     }
 }

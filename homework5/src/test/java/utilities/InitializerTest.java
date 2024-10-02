@@ -9,6 +9,10 @@ import com.github.tomakehurst.wiremock.common.Json;
 import org.junit.jupiter.api.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.Environment;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.client.RestClient;
@@ -40,15 +44,15 @@ class InitializerTest {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("kudago.baseUrl", () -> "http://" + wireMockServer.getHost() + ":" + wireMockServer.getFirstMappedPort() + "/public-api/v1.4");
+        registry.add("kudago.baseUrl", () -> "http://" + wireMockServer.getHost() + ":" + wireMockServer.getFirstMappedPort());
     }
 
     @BeforeAll
     public static void setUp() {
         wireMockServer.start();
         var baseUrl = "http://" + wireMockServer.getHost() + ":" + wireMockServer.getFirstMappedPort();
-        restClient = RestClient.create();
-        kudaGOService = new KudaGOService(restClient, baseUrl);
+        restClient = RestClient.builder().baseUrl(baseUrl).build();
+        kudaGOService = new KudaGOService(restClient);
 
         WireMock.configureFor(wireMockServer.getHost(), wireMockServer.getFirstMappedPort());
 

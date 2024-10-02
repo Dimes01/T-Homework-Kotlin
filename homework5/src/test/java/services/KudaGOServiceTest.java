@@ -4,123 +4,113 @@ import com.example.homework5.Homework5Application;
 import com.example.homework5.models.Category;
 import com.example.homework5.models.Location;
 import com.example.homework5.services.KudaGOService;
-import com.github.tomakehurst.wiremock.client.WireMock;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClient.RequestHeadersUriSpec;
 import org.springframework.web.client.RestClientException;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
-import org.wiremock.integrations.testcontainers.WireMockContainer;
+
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.web.client.RestClient.*;
 
 @SpringBootTest(classes = Homework5Application.class)
-@Testcontainers
 public class KudaGOServiceTest {
 
-    @Autowired
+    @Mock
     private RestClient restClient;
 
-    @Autowired
+    @Mock
+    private RequestHeadersUriSpec requestHeadersUriSpec;
+
+    @Mock
+    private RequestHeadersSpec requestHeadersSpec;
+
+    @Mock
+    private ResponseSpec responseSpec;
+
+    @InjectMocks
     private KudaGOService kudaGOService;
 
-    private static String baseUrl;
+    private static final Category[] expectedCategories = new Category[] {
+            new Category(1, "cat1", "category1"),
+            new Category(2, "cat2", "category2")
+    };
 
-
-    @Test
-    public void getCategories_responseIsNotNull_listOfCategory() {
-        // Arrange
-        var expectedCategories = new Category[] {
-                new Category(1, "cat1", "category1"),
-                new Category(2, "cat2", "category2")
-        };
-        Mockito.when(restClient.get()
-                .uri(Mockito.anyString())
-                .retrieve()
-                .body(Category[].class))
-                .thenReturn(expectedCategories);
-
-        // Act
-        var categories = kudaGOService.getCategories();
-
-        // Assert
-        assertEquals(2, categories.size());
-        assertEquals("category1", categories.getFirst().getName());
-        assertEquals("category2", categories.get(1).getName());
-    }
-
-    @Test
-    public void getCategories_responseIsNull_emptyList() {
-        // Arrange
-        Mockito.when(restClient.get()
-                .uri(Mockito.anyString())
-                .retrieve()
-                .body(Category[].class))
-                .thenReturn(null);
-
-        // Act
-        var categories = kudaGOService.getCategories();
-
-        // Assert
-        assertTrue(categories.isEmpty());
-    }
-
-    @Test
-    public void getLocations_responseIsNotNull_listOfLocations() {
-        // Arrange
-        var mockLocations = new Location[] {
+    private static final Location[] expectedLocations = new Location[] {
             new Location("slug1", "name1", "timezone1", "language1", "currency1"),
             new Location("slug2", "name2", "timezone2", "language2", "currency2")
-        };
-        Mockito.when(restClient.get()
-                .uri(Mockito.anyString())
-                .retrieve()
-                .body(Location[].class))
-                .thenReturn(mockLocations);
+    };
 
-        // Act
-        var locations = kudaGOService.getLocations();
-
-        // Assert
-        assertEquals(2, locations.size());
-        assertEquals("slug1", locations.getFirst().getSlug());
-        assertEquals("name1", locations.getFirst().getName());
-        assertEquals("timezone1", locations.getFirst().getTimezone());
+    private static Stream<Arguments> categories_allSituations() {
+        return Stream.of(
+            Arguments.of((Object) expectedCategories),
+            Arguments.of((Object) null)
+        );
     }
 
-    @Test
-    public void getLocations_responseIsNull_emptyList() {
-        // Arrange
-        Mockito.when(restClient.get()
-                .uri(Mockito.anyString())
-                .retrieve()
-                .body(Location[].class))
-                .thenReturn(null);
+    @ParameterizedTest
+    @MethodSource("categories_allSituations")
+    public void getCategories(Category[] inputArray) {
+        when(restClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(Mockito.anyString())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.body(Category[].class)).thenReturn(inputArray);
 
         // Act
-        var locations = kudaGOService.getLocations();
+        var categories = kudaGOService.getCategories();
+        var expectedSize = inputArray != null ? inputArray.length : 0;
 
         // Assert
-        assertTrue(locations.isEmpty());
+        assertEquals(expectedSize, categories.size());
+        for (int i = 0; i < expectedSize; ++i) {
+            assertEquals(inputArray[i], categories.get(i));
+        }
     }
+
+
+    private static Stream<Arguments> locations_allSituations() {
+        return Stream.of(
+                Arguments.of((Object) expectedLocations),
+                Arguments.of((Object) null)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("locations_allSituations")
+    public void getLocations(Location[] inputArray) {
+        when(restClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(Mockito.anyString())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.body(Location[].class)).thenReturn(inputArray);
+
+        // Act
+        var categories = kudaGOService.getLocations();
+        var expectedSize = inputArray != null ? inputArray.length : 0;
+
+        // Assert
+        assertEquals(expectedSize, categories.size());
+        for (int i = 0; i < expectedSize; ++i) {
+            assertEquals(inputArray[i], categories.get(i));
+        }
+    }
+
 
     @Test
     public void getCategories_throw_RestClientException() {
         // Arrange
-        Mockito.when(restClient.get()
-                .uri(Mockito.anyString())
-                .retrieve()
-                .body(Category[].class))
-                .thenThrow(RestClientException.class);
+        when(restClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(Mockito.anyString())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.body(Category[].class)).thenThrow(RestClientException.class);
 
         // Act
         // Assert
@@ -130,11 +120,10 @@ public class KudaGOServiceTest {
     @Test
     public void getLocations_throw_RestClientException() {
         // Arrange
-        Mockito.when(restClient.get()
-                .uri(Mockito.anyString())
-                .retrieve()
-                .body(Location[].class))
-                .thenThrow(RestClientException.class);
+        when(restClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(Mockito.anyString())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.body(Location[].class)).thenThrow(RestClientException.class);
 
         // Act
         // Assert
