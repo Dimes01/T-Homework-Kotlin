@@ -37,6 +37,7 @@ dependencies {
 	testImplementation("org.testcontainers:junit-jupiter:1.20.2")
 
 	testImplementation("org.wiremock:wiremock-jetty12:3.9.1")
+	testImplementation("org.wiremock:wiremock-standalone:3.9.1")
 	testImplementation("org.wiremock.integrations.testcontainers:wiremock-testcontainers-module:1.0-alpha-14")
 	testImplementation("org.eclipse.jetty:jetty-servlet:11.0.24")
 	testImplementation("org.eclipse.jetty:jetty-servlets:11.0.24")

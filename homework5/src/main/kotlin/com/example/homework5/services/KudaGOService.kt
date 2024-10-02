@@ -13,14 +13,12 @@ class KudaGOService(
     private val restClient: RestClient,
 ) {
     private val logger = LoggerFactory.getLogger(KudaGOService::class.java)
-    private val versionApi = 1.4
-    private val baseUrl = "https://kudago.com/public-api/v$versionApi"
 
     fun getCategories(): List<Category> {
         logger.info("Method 'getCategories' started")
 
         val response = restClient.get()
-            .uri("$baseUrl/place-categories/?lang=ru")
+            .uri("/place-categories/?lang=ru")
             .retrieve()
             .body(Array<Category>::class.java)
         if (response == null)
@@ -36,7 +34,7 @@ class KudaGOService(
     fun getLocations(): List<Location> {
         logger.info("Method 'getLocations' started")
         val response = restClient.get()
-            .uri("$baseUrl/locations/?lang=ru&fields=slug,name,timezone,coords,language,currency")
+            .uri("/locations/?lang=ru&fields=slug,name,timezone,coords,language,currency")
             .retrieve()
             .body(Array<Location>::class.java)
         if (response == null)

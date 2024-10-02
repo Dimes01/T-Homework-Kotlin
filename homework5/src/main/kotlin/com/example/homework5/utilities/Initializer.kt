@@ -8,22 +8,25 @@ import com.example.homework5.services.KudaGOService
 import org.slf4j.LoggerFactory
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
+import org.springframework.context.event.ContextRefreshedEvent
+import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import java.util.concurrent.atomic.AtomicLong
 
 @Component
 class Initializer(
     private val kudaGOService: KudaGOService,
-    private val categoryStorage: Storage<Category>,
-    private val locationStorage: Storage<Location>,
-) : ApplicationRunner {
+    val categoryStorage: Storage<Category>,
+    val locationStorage: Storage<Location>,
+) {
     private val logger = LoggerFactory.getLogger(Initializer::class.java)
     private val idGenerator = AtomicLong(1)
 
     // На момент написания комментария данная аннотация работает только если находится в текущем проекте.
     // Если брать вариант из starter, то ничего работать не будет. В моём понимании это из-за бардака в структуре проектов.
     @LogExecutionTime
-    override fun run(args: ApplicationArguments?) {
+    @EventListener(ContextRefreshedEvent::class)
+    fun run(event: ContextRefreshedEvent) {
         logger.info("Initializer and method 'run' are started")
 
         val categories = kudaGOService.getCategories()
