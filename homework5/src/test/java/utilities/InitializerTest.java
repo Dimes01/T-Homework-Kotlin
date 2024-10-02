@@ -3,16 +3,10 @@ package utilities;
 import com.example.homework5.models.Category;
 import com.example.homework5.models.Location;
 import com.example.homework5.services.KudaGOService;
-import com.example.homework5.utilities.Storage;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.common.Json;
 import org.junit.jupiter.api.*;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.util.TestPropertyValues;
-import org.springframework.context.ApplicationContext;
-import org.springframework.core.env.Environment;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.client.RestClient;
