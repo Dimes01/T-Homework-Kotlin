@@ -4,41 +4,37 @@ import com.example.homework5.models.Category
 import com.example.homework5.models.Location
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import org.springframework.web.client.RestTemplate
+import org.springframework.web.client.RestClient
 
 @Service
-class KudaGOService {
+class KudaGOService(
+    private val restClient: RestClient,
+) {
     private val logger = LoggerFactory.getLogger(KudaGOService::class.java)
-    private val restTemplate = RestTemplate()
-    private val versionApi = 1.4
-    private val baseUrl = "https://kudago.com/public-api/v$versionApi"
 
     fun getCategories(): List<Category> {
         logger.info("Method 'getCategories' started")
-
-        val response = restTemplate.getForObject("$baseUrl/place-categories/?lang=ru", Array<Category>::class.java)
-        if (response == null)
-            logger.warn("Method 'getCategories': response for place categories is null")
-        else
-            logger.debug("Method 'getCategories': place categories are received")
-        val placeCategories = response?.toList() ?: emptyList()
-
-        logger.info("Method 'getCategories' finished")
-        return placeCategories
+        return restClient.get()
+            .uri("/public-api/v1.4/place-categories?lang=ru", )
+            .retrieve()
+            .body(Array<Category>::class.java)?.toList()
+            .also { logger.info("Method 'getCategories' finished") }
+            ?: run {
+                logger.warn("Method 'getCategories': response for place categories is null")
+                emptyList()
+            }
     }
 
     fun getLocations(): List<Location> {
         logger.info("Method 'getLocations' started")
-        val response = restTemplate.getForObject(
-            "$baseUrl/locations/?lang=ru&fields=slug,name,timezone,coords,language,currency",
-            Array<Location>::class.java)
-        if (response == null)
-            logger.warn("Method 'getLocations': response is null")
-        else
-            logger.debug("Method 'getLocations': event categories are received")
-        val locations = response?.toList() ?: emptyList()
-
-        logger.info("Method 'getLocations' finished")
-        return locations
+        return restClient.get()
+            .uri("/public-api/v1.4/locations?lang=ru&fields=slug,name,timezone,coords,language,currency")
+            .retrieve()
+            .body(Array<Location>::class.java)?.toList()
+            .also { logger.info("Method 'getLocations' finished") }
+            ?: run {
+                logger.warn("Method 'getLocations': response for locations is null")
+                emptyList()
+            }
     }
 }

@@ -25,6 +25,10 @@ class LocationController(
     fun getLocationById(@PathVariable id: Long): ResponseEntity<Location> {
         logger.info("Method 'getLocationById' is started")
         val location = storage.getById(id)
+        if (location == null) {
+            logger.warn("Method 'getLocationById': not found element")
+            return ResponseEntity.badRequest().build()
+        }
         logger.info("Method 'getLocationById' is finished")
         return ResponseEntity.ok(location)
     }
@@ -40,11 +44,13 @@ class LocationController(
     @PutMapping("/{id}")
     fun putUpdateLocation(@PathVariable id: Long, @RequestBody location: Location): ResponseEntity<Location> {
         logger.info("Method 'putUpdateLocation' is started")
-        val elem = storage.update(id, location)
-        if (elem == null)
+        val result = storage.update(id, location)
+        if (!result) {
             logger.warn("Method 'putUpdateLocation': could not update element")
+            return ResponseEntity.badRequest().build()
+        }
         logger.info("Method 'putUpdateLocation' is finished")
-        return ResponseEntity.ok(elem)
+        return ResponseEntity.ok(location)
     }
 
     @DeleteMapping("/{id}")
@@ -52,8 +58,10 @@ class LocationController(
         logger.info("Method 'deleteLocation' is started")
         val deletingElem = storage.getById(id)
         val isDelete = storage.delete(id)
-        if (!isDelete)
+        if (!isDelete) {
             logger.warn("Method 'deleteLocation': could not delete element")
+            return ResponseEntity.badRequest().build()
+        }
         logger.info("Method 'deleteLocation' is finished")
         return ResponseEntity.ok(deletingElem)
     }

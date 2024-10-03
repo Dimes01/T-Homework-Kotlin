@@ -17,22 +17,12 @@ class Storage<T> {
 
     fun getById(id: Long): T? {
         logger.info("Method 'getById': started")
-        val elem = storage[id]
+        val elem = storage.get(id)
         if (elem == null)
             logger.warn("Method 'getById': required element is not found")
         logger.info("Method 'getById': finished")
         return elem
     }
-
-//    // Из-за того, что у Location такого же id, как у Category нет, то решил делегировать правило выбора наружу
-//    fun getByRule(block: (T) -> Boolean): T? {
-//        logger.info("Method 'getByRule': started")
-//        val elem = storage.values.find { block(it) }
-//        if (elem == null)
-//            logger.warn("Method 'getByRule': required element is not found")
-//        logger.info("Method 'getByRule': finished")
-//        return elem
-//    }
 
     fun save(id: Long, entity: T): T {
         logger.info("Method 'save': started")
@@ -42,15 +32,15 @@ class Storage<T> {
         return entity
     }
 
-    fun update(id: Long, entity: T): T? {
+    fun update(id: Long, entity: T): Boolean {
         logger.info("Method 'update': started")
         val result = if (storage.containsKey(id)) {
             storage[id] = entity
             logger.debug("Method 'update': result is entity with id($id)")
-            entity
+            true
         } else {
-            logger.debug("Method 'update': result is null")
-            null
+            logger.debug("Method 'update': not found element")
+            false
         }
         logger.info("Method 'update': finished")
         return result

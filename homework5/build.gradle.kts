@@ -3,6 +3,7 @@ plugins {
 	kotlin("plugin.spring") version "2.0.0"
 	id("org.springframework.boot") version "3.3.4"
 	id("io.spring.dependency-management") version "1.1.6"
+	kotlin("plugin.serialization") version "2.0.0"
 }
 
 group = "com.example"
@@ -19,7 +20,7 @@ repositories {
 }
 
 dependencies {
-//	implementation(project(":starter"))
+	implementation(project(":starter"))
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-aop")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")

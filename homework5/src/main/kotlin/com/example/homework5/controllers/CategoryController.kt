@@ -32,6 +32,10 @@ class CategoryController(
     fun getCategoryById(@PathVariable id: Long): ResponseEntity<Category> {
         logger.info("Method 'getCategoryById' is started")
         val category = storage.getById(id)
+        if (category == null) {
+            logger.warn("Method 'getCategoryById': not found element")
+            return ResponseEntity.badRequest().build()
+        }
         logger.info("Method 'getCategoryById' is finished")
         return ResponseEntity.ok(category)
     }
@@ -47,11 +51,13 @@ class CategoryController(
     @PutMapping("/{id}")
     fun putUpdateCategory(@PathVariable id: Long, @RequestBody category: Category): ResponseEntity<Category> {
         logger.info("Method 'putUpdateCategory' is started")
-        val elem = storage.update(id, category)
-        if (elem == null)
+        val result = storage.update(id, category)
+        if (!result) {
             logger.warn("Method 'putUpdateCategory': could not update element")
+            return ResponseEntity.badRequest().build()
+        }
         logger.info("Method 'putUpdateCategory' is finished")
-        return ResponseEntity.ok(elem)
+        return ResponseEntity.ok(category)
     }
 
     @DeleteMapping("/{id}")
@@ -59,8 +65,10 @@ class CategoryController(
         logger.info("Method 'deleteCategory' is started")
         val deletingElem = storage.getById(id)
         val isDelete = storage.delete(id)
-        if (!isDelete)
+        if (!isDelete) {
             logger.warn("Method 'deleteCategory': could not delete element")
+            return ResponseEntity.badRequest().build()
+        }
         logger.info("Method 'deleteCategory' is finished")
         return ResponseEntity.ok(deletingElem)
     }
