@@ -13,6 +13,7 @@ repositories {
 }
 
 dependencies {
+    implementation("org.springframework.boot:spring-boot-starter:3.3.4")
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("ch.qos.logback:logback-classic:1.5.7")
     testImplementation(kotlin("test"))
