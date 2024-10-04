@@ -13,8 +13,8 @@ import java.util.concurrent.atomic.AtomicLong
 @Component
 class Initializer(
     private val kudaGOService: KudaGOService,
-    private val categoryStorage: Storage<Category>,
-    private val locationStorage: Storage<Location>,
+    val categoryStorage: Storage<Category>,
+    val locationStorage: Storage<Location>,
 ) {
     private val logger = LoggerFactory.getLogger(Initializer::class.java)
     private val idGenerator = AtomicLong(1)

@@ -255,5 +255,5 @@ suspend fun main() {
 
     // Задача 4
     list = getNews(5)
-    saveNews("src/main/resources/top5news.csv", list)
+    saveNews("homework4/src/main/resources/top5news.csv", list)
 }

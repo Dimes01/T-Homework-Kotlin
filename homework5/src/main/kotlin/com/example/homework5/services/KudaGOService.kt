@@ -15,7 +15,7 @@ class KudaGOService(
     fun getCategories(): List<Category> {
         logger.info("Method 'getCategories' started")
         return restClient.get()
-            .uri("/public-api/v1.4/place-categories?lang=ru", )
+            .uri("/public-api/v1.4/place-categories?lang=ru")
             .retrieve()
             .body(Array<Category>::class.java)?.toList()
             .also { logger.info("Method 'getCategories' finished") }

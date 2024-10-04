@@ -183,6 +183,6 @@ class MainKtTest {
     @Test
     fun `save news in existed file`() {
         val list = listOf(news1, news2)
-        assertThrows<IOException>{ saveNews("src/test/resources/existedFile.csv", list) }
+        assertThrows<IOException>{ saveNews("homework4/src/test/resources/existedFile.csv", list) }
     }
 }
