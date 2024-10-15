@@ -1,4 +1,3 @@
-import annotations.LogExecutionTime
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import io.ktor.client.*
@@ -15,7 +14,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import org.slf4j.LoggerFactory
 import java.io.File
-import kotlin.time.Duration
+import java.lang.Thread.sleep
 import kotlin.time.measureTime
 
 
@@ -92,33 +91,42 @@ fun CoroutineScope.newsFetcher(channel: SendChannel<ProcessorMessage>, pageSize:
     logger.info("Method `newsFetcher`: finished")
 }
 
-fun main() {
-    var countTests = 5
-    val times = emptyList<Duration>().toMutableList()
-    while (countTests > 0) {
-        val time = measureTime {
-            runBlocking {
-                val outputFile = File("news.txt")
-                val config: Config = ConfigFactory.load().getConfig("news-fetcher")
-                val threadCount = config.getInt("threads")
-                val pageSize = config.getInt("page-size")
-                val maxCountNews = config.getInt("max-count-news")
-                val coroutineMaxCountNews: Int = maxCountNews / threadCount
-                val processor = processorActor(outputFile)
+suspend fun main() {
+    val outputFile = File("news.txt")
+    val config: Config = ConfigFactory.load().getConfig("news-fetcher")
+    val pageSize = config.getInt("page-size")
+    val maxCountNews = config.getInt("max-count-news")
+//    val threadCount = config.getInt("threads")
+    var threadCount = 5
+    while (threadCount in 5..25) {
+        val countTests = 5
+        var times = 0L
+        var res = ""
+        var tempCountTests = countTests
+        val coroutineMaxCountNews: Int = maxCountNews / threadCount
+        while (tempCountTests > 0) {
+            val time = measureTime {
+                runBlocking {
+                    val processor = processorActor(outputFile)
 
-                withContext(newFixedThreadPoolContext(threadCount, "newsFetchPool")) {
-                    repeat(threadCount) {
-                        newsFetcher(processor, pageSize, it + 1, threadCount, coroutineMaxCountNews)
+                    withContext(newFixedThreadPoolContext(threadCount, "newsFetchPool")) {
+                        repeat(threadCount) {
+                            newsFetcher(processor, pageSize, it + 1, threadCount, coroutineMaxCountNews)
+                        }
                     }
+
+                    processor.close()
                 }
-
-                processor.close()
-                client.close()
             }
+            sleep(1000)
+            tempCountTests -= 1
+            times += time.inWholeMilliseconds
+            res += " ${time.inWholeMilliseconds} |"
+            logger.info("Test ${countTests - tempCountTests} is finished.")
         }
-        countTests -= 1
-        times += time
+        println("| $threadCount | $res ${times / countTests} |")
+        threadCount += 5
+        sleep(2000)
     }
-
-    logger.info("Time: $time")
+    client.close()
 }
