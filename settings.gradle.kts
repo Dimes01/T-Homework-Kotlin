@@ -5,3 +5,4 @@ rootProject.name = "T-Homework-Kotlin"
 include("homework4")
 include("homework5")
 include("starter")
+include("homework9")
