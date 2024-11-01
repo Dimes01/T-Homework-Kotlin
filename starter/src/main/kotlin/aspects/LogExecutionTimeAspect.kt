@@ -7,10 +7,11 @@ import org.aspectj.lang.annotation.Pointcut
 import org.aspectj.lang.reflect.MethodSignature
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import kotlin.time.measureTimedValue
 
 @Aspect
 @Component
-class LogExecutionTimeAspect {
+open class LogExecutionTimeAspect {
     private val logger = LoggerFactory.getLogger(LogExecutionTimeAspect::class.java)
 
     @Pointcut("@annotation(annotations.LogExecutionTime)")
@@ -18,11 +19,9 @@ class LogExecutionTimeAspect {
 
     @Around("hasAnnotation()")
     fun logExecutionTime(joinPoint: ProceedingJoinPoint): Any? {
-        val start = System.currentTimeMillis()
-
-        val result = joinPoint.proceed()
-
-        val elapsedTime = System.currentTimeMillis() - start
+        val (result, elapsedTime) = measureTimedValue {
+            joinPoint.proceed()
+        }
 
         val methodSignature = joinPoint.signature as MethodSignature
         val methodName = methodSignature.method.name
